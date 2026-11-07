@@ -27,7 +27,4 @@ app.use('/api/v1/tours', tourRouter);
 
 app.use('/api/v1/users', userRouter);
 
-// Listen
-app.listen(port, () => {
-  console.log(`App running on port ${port}...`);
-});
+export { app, port };
