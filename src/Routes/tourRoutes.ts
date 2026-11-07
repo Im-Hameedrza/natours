@@ -1,0 +1,17 @@
+import express from 'express';
+import {
+  createNewTour,
+  deleteTour,
+  getAllTours,
+  getSingleTour,
+  updateTour,
+} from '../Controllers/tour.controller.js';
+
+export const tourRouter = express.Router();
+
+tourRouter.route('/').get(getAllTours).post(createNewTour);
+tourRouter
+  .route('/:id')
+  .get(getSingleTour)
+  .patch(updateTour)
+  .delete(deleteTour);
