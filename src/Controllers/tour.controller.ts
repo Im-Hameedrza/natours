@@ -1,4 +1,4 @@
-import { Request, Response } from 'express';
+import { NextFunction, Request, Response } from 'express';
 import { readFileSync, writeFile } from 'node:fs';
 import { randomUUID } from 'node:crypto';
 import { Tour } from '../@types.js';
@@ -9,6 +9,24 @@ let tours: Tour[] = JSON.parse(
     'utf-8',
   ),
 );
+
+export const checkID = (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+  val: string,
+) => {
+  console.log(`id is: ${val}`);
+
+  const tour = tours.find((item) => String(item._id) === String(val));
+  if (!tour) {
+    return res.status(404).json({
+      status: 'failed',
+      message: 'Invalid Id',
+    });
+  }
+  next();
+};
 
 // get all the tours
 export const getAllTours = (req: Request, res: Response) => {
@@ -87,14 +105,6 @@ export const createNewTour = (req: Request, res: Response) => {
 
 // update tour
 export const updateTour = (req: Request, res: Response) => {
-  const tour = tours.find((item) => String(item._id) === String(req.params.id));
-  if (!tour) {
-    return res.status(404).json({
-      status: 'failed',
-      message: 'Invalid Id',
-    });
-  }
-
   res.status(500).json({
     status: 'error',
     message: 'this route is not defined yet',
@@ -130,4 +140,7 @@ export const deleteTour = (req: Request, res: Response) => {
       res.status(204).end();
     },
   );
+  return res.status(200).json({
+    status: 'success',
+  });
 };
