@@ -140,7 +140,7 @@ export const deleteTour = (req: Request, res: Response) => {
       res.status(204).end();
     },
   );
-  return res.status(200).json({
+  return res.status(204).json({
     status: 'success',
   });
 };
