@@ -38,10 +38,10 @@ export type Tour = {
 };
 
 export type User = {
-  id: string;
+  _id: string;
   name: string;
   email: string;
-  role: 'admin' | 'user';
+  role: 'admin' | 'user' | 'guide' | 'lead-guide';
   active: boolean;
   photo: string;
   password: string;

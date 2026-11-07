@@ -1,8 +1,9 @@
 import { Request, Response } from 'express';
 import { readFileSync, writeFile } from 'node:fs';
+import { randomUUID } from 'node:crypto';
 import { Tour } from '../@types.js';
 
-const tours: Tour[] = JSON.parse(
+let tours: Tour[] = JSON.parse(
   readFileSync(
     new URL('../../dev-data/data/tours.json', import.meta.url),
     'utf-8',
@@ -40,16 +41,40 @@ export const getSingleTour = (req: Request, res: Response) => {
 
 // create a new tour
 export const createNewTour = (req: Request, res: Response) => {
-  const newId: string = tours[tours.length - 1]._id + 1;
-  const newTour: Tour = Object.assign({ _id: newId }, req.body);
+  if (
+    !req.body ||
+    typeof req.body !== 'object' ||
+    Array.isArray(req.body) ||
+    typeof req.body.name !== 'string' ||
+    req.body.name.trim() === '' ||
+    typeof req.body.price !== 'number' ||
+    !Number.isFinite(req.body.price) ||
+    req.body.price < 0
+  ) {
+    return res.status(400).json({
+      status: 'fail',
+      message: 'A tour must have a name and a valid price',
+    });
+  }
 
-  tours.push(newTour);
+  const newId: string = randomUUID();
+  const newTour: Tour = Object.assign({}, req.body, { _id: newId });
+  const newTours = [...tours, newTour];
 
   writeFile(
-    new URL('../dev-data/data/tours.json', import.meta.url),
-    JSON.stringify(tours),
+    new URL('../../dev-data/data/tours.json', import.meta.url),
+    JSON.stringify(newTours),
     'utf-8',
     (err) => {
+      if (err) {
+        return res.status(500).json({
+          status: 'error',
+          message: 'Failed to create tour',
+        });
+      }
+
+      tours = newTours;
+
       res.status(201).json({
         status: 'success',
         data: {
@@ -70,11 +95,9 @@ export const updateTour = (req: Request, res: Response) => {
     });
   }
 
-  res.status(200).json({
-    status: 200,
-    data: {
-      tour: '<updated tour here ...>',
-    },
+  res.status(500).json({
+    status: 'error',
+    message: 'this route is not defined yet',
   });
 };
 
@@ -91,7 +114,7 @@ export const deleteTour = (req: Request, res: Response) => {
   }
 
   writeFile(
-    new URL('../dev-data/data/tours.json', import.meta.url),
+    new URL('../../dev-data/data/tours.json', import.meta.url),
     JSON.stringify(filterdTours),
     'utf-8',
     (err) => {
@@ -102,13 +125,9 @@ export const deleteTour = (req: Request, res: Response) => {
         });
       }
 
-      res.status(204).json({
-        status: 'success',
-        message: 'Tour deleted successfully',
-        data: {
-          tours: null,
-        },
-      });
+      tours = filterdTours;
+
+      res.status(204).end();
     },
   );
 };

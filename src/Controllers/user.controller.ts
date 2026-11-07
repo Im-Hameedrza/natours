@@ -12,7 +12,7 @@ const users: User[] = JSON.parse(
 // Get all users
 export const getAllUsers = (req: Request, res: Response) => {
   if (!users || users.length === 0) {
-    res.status(404).json({
+    return res.status(404).json({
       status: 'fail',
       message: 'Users not found',
     });
@@ -22,7 +22,7 @@ export const getAllUsers = (req: Request, res: Response) => {
     status: 'success',
     result: users.length,
     data: {
-      users,
+      users: users.map(({ password, ...user }) => user),
     },
   });
 };
