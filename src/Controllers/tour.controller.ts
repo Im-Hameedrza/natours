@@ -10,6 +10,8 @@ let tours: Tour[] = JSON.parse(
   ),
 );
 
+// middleware
+
 export const checkID = (
   req: Request,
   res: Response,
@@ -25,6 +27,34 @@ export const checkID = (
       message: 'Invalid Id',
     });
   }
+  next();
+};
+
+export const checkTourValidation = (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+): void => {
+  if (!req.body || !('name' in req.body && 'price' in req.body)) {
+    res.status(400).json({
+      status: 'failed',
+      message: 'name or price field is empty',
+    });
+    return;
+  }
+  const { name, price } = req.body;
+  if (
+    typeof name !== 'string' ||
+    typeof price !== 'number' ||
+    name.trim() === ''
+  ) {
+    res.status(400).json({
+      status: 'failed',
+      message: 'please enter valid values',
+    });
+    return;
+  }
+
   next();
 };
 
@@ -59,22 +89,6 @@ export const getSingleTour = (req: Request, res: Response) => {
 
 // create a new tour
 export const createNewTour = (req: Request, res: Response) => {
-  if (
-    !req.body ||
-    typeof req.body !== 'object' ||
-    Array.isArray(req.body) ||
-    typeof req.body.name !== 'string' ||
-    req.body.name.trim() === '' ||
-    typeof req.body.price !== 'number' ||
-    !Number.isFinite(req.body.price) ||
-    req.body.price < 0
-  ) {
-    return res.status(400).json({
-      status: 'fail',
-      message: 'A tour must have a name and a valid price',
-    });
-  }
-
   const newId: string = randomUUID();
   const newTour: Tour = Object.assign({}, req.body, { _id: newId });
   const newTours = [...tours, newTour];
