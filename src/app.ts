@@ -9,7 +9,7 @@ dotenv.config({
 });
 
 const app = express();
-
+app.set('query parser', 'extended');
 // ----------------------------Middlewares
 if (process.env.NODE_ENV === 'development') {
   app.use(morgan('dev'));
