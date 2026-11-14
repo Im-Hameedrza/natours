@@ -1,3 +1,6 @@
+import { Request } from 'express';
+import { ToursModel } from '../models/tourModels.js';
+
 export class APIFeatures {
   constructor(
     public query: ReturnType<typeof ToursModel.find>,
