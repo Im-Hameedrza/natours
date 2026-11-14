@@ -1,6 +1,4 @@
-import { NextFunction, Request, Response } from 'express';
-import { randomUUID } from 'node:crypto';
-import { Tour } from '../@types.js';
+import type { Request, Response } from 'express';
 import { ToursModel } from '../models/tourModels.js';
 
 // middleware
@@ -23,8 +21,12 @@ export const getAllTours = async (req: Request, res: Response) => {
     let query = ToursModel.find(JSON.parse(queryStr));
 
     // Sorting
-    if (req.query.sort) {
-      query = query.sort(req.query.sort);
+    if (typeof req.query.sort === 'string') {
+      const sortBy = req.query.sort.split(',').join(' ');
+
+      query = query.sort(sortBy);
+    } else {
+      query = query.sort('-createdAt');
     }
 
     const tours = await query;
