@@ -1,5 +1,6 @@
 import express from 'express';
 import {
+  aliasTopTours,
   createNewTour,
   deleteTour,
   getAllTours,
@@ -10,6 +11,8 @@ import {
 export const tourRouter = express.Router();
 
 // tourRouter.param('id', checkID);
+
+tourRouter.route('/top-5-cheap').get(aliasTopTours, getAllTours);
 
 tourRouter.route('/').get(getAllTours).post(createNewTour);
 tourRouter

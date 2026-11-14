@@ -1,34 +1,85 @@
-import type { Request, Response } from 'express';
+import type { NextFunction, Request, Response } from 'express';
 import { ToursModel } from '../models/tourModels.js';
 
 // middleware
 
+export const aliasTopTours = (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  res.locals.tourQuery = {
+    limit: '5',
+    sort: '-ratingsAverage,price',
+    fields: 'name,price,ratingsAverage,summary,difficulty',
+  };
+
+  next();
+};
+
 // get all the tours
 export const getAllTours = async (req: Request, res: Response) => {
   try {
+    const params = {
+      ...req.query,
+      ...(res.locals.tourQuery ?? {}),
+    };
     // Building Query
     // Filtering 1
-    const queryObj = { ...req.query };
-    const excludedFields = ['page', 'sort', 'limit', 'field'];
+    const queryObj = { ...params };
+    const excludedFields = ['page', 'sort', 'limit', 'fields'];
     excludedFields.forEach((el) => delete queryObj[el]);
 
-    // console.log(req.query, queryObj);
     // Filtering 2
     let queryStr = JSON.stringify(queryObj);
     queryStr = queryStr.replace(/\b(gte|gt|lte|lt)\b/g, (match) => `$${match}`);
 
-    // Run query
     let query = ToursModel.find(JSON.parse(queryStr));
 
     // Sorting
-    if (typeof req.query.sort === 'string') {
-      const sortBy = req.query.sort.split(',').join(' ');
+    if (typeof params.sort === 'string') {
+      const sortBy = params.sort.split(',').join(' ');
 
       query = query.sort(sortBy);
     } else {
       query = query.sort('-createdAt');
     }
 
+    // Field Limitng
+
+    if (params.fields) {
+      const fields = String(params.fields).split(',').join(' ');
+      console.log(fields);
+
+      query = query.select(fields);
+    } else {
+      query = query.select('-__v');
+    }
+
+    // Pagination
+    const page: number = Number(params.page) || 1;
+    const limit: number = Number(params.limit) || 10;
+    const skip: number = Number((page - 1) * limit);
+    const numOfTours = await ToursModel.countDocuments();
+
+    if (
+      !Number.isSafeInteger(page) ||
+      page < 1 ||
+      !Number.isSafeInteger(limit) ||
+      limit < 1 ||
+      limit > 10 ||
+      numOfTours <= skip
+    ) {
+      res.status(400).json({
+        status: 'fail',
+        message: 'Invalid page or limit',
+      });
+      return;
+    }
+
+    query = query.skip(skip).limit(limit);
+
+    // Run query
     const tours = await query;
 
     // Response
