@@ -176,8 +176,68 @@ export const getToursStats = async (req: Request, res: Response) => {
   }
 };
 
+const months = [
+  'Jan',
+  'Feb',
+  'Mar',
+  'Apr',
+  'May',
+  'Jun',
+  'Jul',
+  'Aug',
+  'Sep',
+  'Oct',
+  'Nov',
+  'Dec',
+];
+
 export const getMonthlyPlan = async (req: Request, res: Response) => {
   try {
+    const year = Number(req.params.year);
+
+    const plan = await ToursModel.aggregate([
+      { $unwind: '$startDates' },
+      {
+        $match: {
+          startDates: {
+            $gte: new Date(`${year}-01-01`),
+            $lt: new Date(`${year + 1}-01-01`),
+          },
+        },
+      },
+      {
+        $group: {
+          _id: { $month: '$startDates' },
+          numOfTours: { $sum: 1 },
+          tours: {
+            $push: '$name',
+          },
+        },
+      },
+      {
+        $addFields: {
+          month: '$_id',
+          monthName: {
+            $arrayElemAt: [months, { $subtract: ['$_id', 1] }],
+          },
+        },
+      },
+      {
+        $project: { _id: 0 },
+      },
+      {
+        $sort: {
+          numOfTours: 1,
+        },
+      },
+    ]);
+
+    res.status(200).json({
+      status: 'success',
+      data: {
+        plan,
+      },
+    });
   } catch (error) {
     res.status(404).json({
       status: 'fail',

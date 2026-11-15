@@ -4,6 +4,7 @@ import {
   createNewTour,
   deleteTour,
   getAllTours,
+  getMonthlyPlan,
   getSingleTour,
   getToursStats,
   updateTour,
@@ -16,6 +17,7 @@ export const tourRouter = express.Router();
 tourRouter.route('/top-5-cheap').get(aliasTopTours, getAllTours);
 
 tourRouter.route('/tour-stats').get(getToursStats);
+tourRouter.route('/monthlyPlan/:year').get(getMonthlyPlan);
 
 tourRouter.route('/').get(getAllTours).post(createNewTour);
 tourRouter
