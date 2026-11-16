@@ -1,5 +1,6 @@
 import mongoose, { Model } from 'mongoose';
 import { Tour } from '../@types.js';
+import slugify from 'slugify';
 
 interface TourVirtuals {
   durationWeeks: number;
@@ -55,6 +56,10 @@ const tourSchema = new mongoose.Schema<
     priceDiscount: {
       type: Number,
     },
+    slug: {
+      type: String,
+      unique: true,
+    },
     summary: {
       type: String,
       trim: true,
@@ -89,6 +94,13 @@ tourSchema.virtual('durationWeeks').get(function () {
   if (this.duration > 7) {
     return `${week.toFixed()} week & ${remainingDays}days`;
   }
+});
+
+// Document middleware it runs before save() and create() commands
+tourSchema.pre('save', function (next) {
+  this.slug = slugify(this.name, {
+    lower: true,
+  });
 });
 
 export const ToursModel = mongoose.model<Tour, TourModelType>(

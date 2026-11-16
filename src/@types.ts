@@ -25,7 +25,7 @@ export type Tour = {
   summary: string;
   description: string;
   imageCover: string;
-
+  slug?: string;
   ratingsAverage: number;
   ratingsQuantity: number;
   priceDiscount: number;
