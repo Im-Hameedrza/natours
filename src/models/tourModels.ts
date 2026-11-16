@@ -1,66 +1,97 @@
-import mongoose from 'mongoose';
+import mongoose, { Model } from 'mongoose';
+import { Tour } from '../@types.js';
 
-const tourSchema = new mongoose.Schema({
-  name: {
-    type: String,
-    required: [true, 'Tour must have a name'],
-    unique: true,
-    trim: true,
-    minlength: [1, 'Tour name cannot be empty'],
-  },
-  duration: {
-    type: Number,
-    required: [true, 'Duration is required'],
-  },
-  maxGroupSize: {
-    type: Number,
-    required: [true, 'Tour must have a group size'],
-  },
+interface TourVirtuals {
+  durationWeeks: number;
+}
 
-  difficulty: {
-    type: String,
-    required: [true, 'Tour must have a difficukty'],
-  },
-  ratingsAverage: {
-    type: Number,
-    default: 4.5,
-    min: [1, 'Rating must be at least 1'],
-    max: [5, 'Rating cannot exceed 5'],
-  },
+type TourModelType = Model<Tour, {}, {}, TourVirtuals>;
 
-  ratingsQuantity: {
-    type: Number,
-    default: 0,
-  },
+const tourSchema = new mongoose.Schema<
+  Tour,
+  TourModelType,
+  {},
+  {},
+  TourVirtuals
+>(
+  {
+    name: {
+      type: String,
+      required: [true, 'Tour must have a name'],
+      unique: true,
+      trim: true,
+      minlength: [1, 'Tour name cannot be empty'],
+    },
+    duration: {
+      type: Number,
+      required: [true, 'Duration is required'],
+    },
+    maxGroupSize: {
+      type: Number,
+      required: [true, 'Tour must have a group size'],
+    },
 
-  price: {
-    type: Number,
-    required: [true, 'Tour must have a price'],
-    min: [0, 'Price cannot be negative'],
+    difficulty: {
+      type: String,
+      required: [true, 'Tour must have a difficukty'],
+    },
+    ratingsAverage: {
+      type: Number,
+      default: 4.5,
+      min: [1, 'Rating must be at least 1'],
+      max: [5, 'Rating cannot exceed 5'],
+    },
+
+    ratingsQuantity: {
+      type: Number,
+      default: 0,
+    },
+
+    price: {
+      type: Number,
+      required: [true, 'Tour must have a price'],
+      min: [0, 'Price cannot be negative'],
+    },
+    priceDiscount: {
+      type: Number,
+    },
+    summary: {
+      type: String,
+      trim: true,
+      required: [true, 'tour must have a summary'],
+    },
+    description: {
+      type: String,
+      trim: true,
+    },
+    imageCover: {
+      type: String,
+      trim: true,
+      required: [true, 'Tour must have a cover image'],
+    },
+    images: [String],
+    createdAt: {
+      type: Date,
+      default: Date.now,
+    },
+    startDates: [Date],
   },
-  priceDiscount: {
-    type: Number,
+  {
+    toJSON: { virtuals: true },
+
+    toObject: { virtuals: true },
   },
-  summary: {
-    type: String,
-    trim: true,
-    required: [true, 'tour must have a summary'],
-  },
-  description: {
-    type: String,
-    trim: true,
-  },
-  imageCover: {
-    type: String,
-    trim: true,
-    required: [true, 'Tour must have a cover image'],
-  },
-  images: [String],
-  createdAt: {
-    type: Date,
-    default: Date.now,
-  },
-  startDates: [Date],
+);
+
+tourSchema.virtual('durationWeeks').get(function () {
+  const week: Number = this.duration / 7;
+  const remainingDays: number = this.duration - Number(week.toFixed()) * 7;
+  if (this.duration > 7) {
+    return `${week.toFixed()} week & ${remainingDays}days`;
+  }
 });
 
-export const ToursModel = mongoose.model('Tour', tourSchema);
+export const ToursModel = mongoose.model<Tour, TourModelType>(
+  'Tour',
+  tourSchema,
+);

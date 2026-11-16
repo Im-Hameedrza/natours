@@ -28,7 +28,7 @@ export const getAllTours = async (req: Request, res: Response) => {
     const features = new APIFeatures(ToursModel.find(), params)
       .filter()
       .sort()
-      .fieldLimiting()
+      .limitFields()
       .paginating();
 
     const tours = await features.query;

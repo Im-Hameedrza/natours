@@ -1,9 +1,9 @@
 import { Request } from 'express';
 import { ToursModel } from '../models/tourModels.js';
-
+type TourQuery = ReturnType<typeof ToursModel.find>;
 export class APIFeatures {
   constructor(
-    public query: ReturnType<typeof ToursModel.find>,
+    public query: TourQuery,
     public queryStr: Request['query'],
   ) {
     this.query = query;
@@ -35,18 +35,19 @@ export class APIFeatures {
     return this;
   }
 
-  fieldLimiting() {
-    if (typeof this.queryStr.fields === 'string') {
-      const fields = this.queryStr.fields.split(',').join(' ');
-      console.log(fields);
+  limitFields() {
+    const fields = this.queryStr.fields;
 
-      this.query = this.query.select(fields);
+    if (typeof fields === 'string') {
+      const selectedFields = fields.split(',').join(' ');
+
+      this.query.select(selectedFields);
     } else {
-      this.query = this.query.select('-__v');
+      this.query.select('-__v');
     }
+
     return this;
   }
-
   paginating() {
     const page: number = Number(this.queryStr.page) || 1;
     const limit: number = Number(this.queryStr.limit) || 10;

@@ -28,11 +28,11 @@ export type Tour = {
 
   ratingsAverage: number;
   ratingsQuantity: number;
-
+  priceDiscount: number;
   images: string[];
   startDates: string[];
   guides: string[];
-
+  createdAt: Date;
   startLocation: StartLocation;
   locations: Location[];
 };
