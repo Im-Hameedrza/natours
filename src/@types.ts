@@ -33,6 +33,7 @@ export type Tour = {
   startDates: string[];
   guides: string[];
   createdAt: Date;
+  secretTour: Boolean;
   startLocation: StartLocation;
   locations: Location[];
 };

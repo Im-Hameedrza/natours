@@ -1,6 +1,7 @@
 import mongoose, { Model } from 'mongoose';
 import { Tour } from '../@types.js';
 import slugify from 'slugify';
+import { Query } from 'mongoose';
 
 interface TourVirtuals {
   durationWeeks: number;
@@ -75,6 +76,10 @@ const tourSchema = new mongoose.Schema<
       required: [true, 'Tour must have a cover image'],
     },
     images: [String],
+    secretTour: {
+      type: Boolean,
+      default: false,
+    },
     createdAt: {
       type: Date,
       default: Date.now,
@@ -103,6 +108,20 @@ tourSchema.pre('save', function (next) {
   });
 });
 
+// Query middleware
+
+tourSchema.pre(/^find/, function () {
+  if (this instanceof Query) {
+    this.where({ secretTour: { $ne: true } });
+  }
+});
+
+// aggregate middleware
+tourSchema.pre('aggregate', function () {
+  this.pipeline().unshift({
+    $match: { secretTour: { $ne: true } },
+  });
+});
 export const ToursModel = mongoose.model<Tour, TourModelType>(
   'Tour',
   tourSchema,

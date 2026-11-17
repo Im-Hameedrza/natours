@@ -50,7 +50,7 @@ export class APIFeatures {
   }
   paginating() {
     const page: number = Number(this.queryStr.page) || 1;
-    const limit: number = Number(this.queryStr.limit) || 10;
+    const limit: number = Number(this.queryStr.limit) || 20;
     const skip: number = Number((page - 1) * limit);
 
     if (
@@ -58,7 +58,7 @@ export class APIFeatures {
       page < 1 ||
       !Number.isSafeInteger(limit) ||
       limit < 1 ||
-      limit > 10
+      limit > 20
     ) {
       throw new Error('this is not working');
     }
